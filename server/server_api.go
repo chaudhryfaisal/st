@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boypt/simple-torrent/common"
-	"github.com/boypt/simple-torrent/engine"
+	"github.com/chaudhryfaisal/st/common"
+	"github.com/chaudhryfaisal/st/engine"
 )
 
 var (

@@ -1,7 +1,7 @@
 version: '3'
 services:
   service.simpletorrent:
-    image: boypt/cloud-torrent
+    image: ghcr.io/chaudhryfaisal/st
     restart: unless-stopped
     ports:
       - "3000:3000"

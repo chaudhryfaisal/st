@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/boypt/simple-torrent/common"
+	"github.com/chaudhryfaisal/st/common"
 	"github.com/jpillora/archive"
 )
 

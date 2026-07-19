@@ -1,4 +1,4 @@
-app_name = simple-torrent
+app_name = st
 
 build: get
 	CGO_ENABLED=0 go build -ldflags "-X main.VERSION=`git rev-parse --short HEAD`" -o $(app_name)

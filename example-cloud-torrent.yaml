@@ -45,7 +45,7 @@ IncomingPort: 50007
 # IncomingPort The port SimpleTorrent listens to.
 
 DoneCmd: ""
-# DoneCmd is An external program to call on task finished. See [DoneCmd Usage](https:#github.com/boypt/simple-torrent/wiki/DoneCmdUsage).
+# DoneCmd is An external program to call on task finished. See [DoneCmd Usage](https:#github.com/chaudhryfaisal/st/wiki/DoneCmdUsage).
 
 SeedRatio: 1.5
 # SeedRatio The ratio of task Upload/Download data when reached, the task will be stop.
@@ -72,7 +72,7 @@ ProxyURL: ""
 # ProxyURL Socks5 Proxy to torrent engine. Authentication should be included in the url if needed.
 # Eg. socks5:#demo:demo@192.168.99.100:1080
 
-# ScraperURL: "https:#raw.githubusercontent.com/boypt/simple-torrent/master/scraper-config.json"
+# ScraperURL: "https:#raw.githubusercontent.com/chaudhryfaisal/st/master/scraper-config.json"
 # The magnet search engine configuration file. Don't set this option (leave it commented) if not intended to.
 
 RSSUrl: |-

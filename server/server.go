@@ -13,16 +13,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/boypt/simple-torrent/common"
-	"github.com/boypt/simple-torrent/server/httpmiddleware"
+	"github.com/chaudhryfaisal/st/common"
+	"github.com/chaudhryfaisal/st/server/httpmiddleware"
 
 	"errors"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/anacrolix/torrent"
 	"github.com/boypt/scraper"
-	"github.com/boypt/simple-torrent/engine"
-	ctstatic "github.com/boypt/simple-torrent/static"
+	"github.com/chaudhryfaisal/st/engine"
+	ctstatic "github.com/chaudhryfaisal/st/static"
 	"github.com/jpillora/cookieauth"
 	"github.com/jpillora/requestlog"
 	"github.com/jpillora/velox"

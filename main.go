@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/boypt/simple-torrent/server"
+	"github.com/chaudhryfaisal/st/server"
 	"github.com/jpillora/opts"
 )
 
@@ -24,7 +24,7 @@ func main() {
 
 	o := opts.New(&s)
 	o.Version(VERSION)
-	o.Repo("https://github.com/boypt/simple-torrent")
+	o.Repo("https://github.com/chaudhryfaisal/st")
 	o.PkgRepo()
 	o.SetLineWidth(96)
 	o.Parse()

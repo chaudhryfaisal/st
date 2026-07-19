@@ -15,7 +15,7 @@ import (
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/metainfo"
 	"github.com/anacrolix/torrent/storage"
-	"github.com/boypt/simple-torrent/common"
+	"github.com/chaudhryfaisal/st/common"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -98,7 +98,7 @@ func (e *Engine) Configure(c *Config) error {
 	}
 
 	if c.MuteEngineLog {
-		tc.Logger = eglog.Discard
+		tc.Logger = eglog.Logger{}
 	}
 	tc.Debug = c.EngineDebug
 	tc.NoUpload = !c.EnableUpload

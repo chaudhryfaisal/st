@@ -67,8 +67,6 @@ func TestScrapers(t *testing.T) {
 			switch id {
 			case "eztv":
 				params["query"] = "house of the dragon"
-			case "nyaa":
-				params["query"] = "house of the dragon"
 			case "thepiratebay":
 				params["query"] = "house of the dragon"
 			case "uindex":
@@ -78,6 +76,8 @@ func TestScrapers(t *testing.T) {
 			if endpoint.FlareSolverrURL == "" {
 				if fsURL := os.Getenv("FLARESOLVERR_URL"); fsURL != "" {
 					endpoint.FlareSolverrURL = fsURL
+				} else if endpoint.Flare {
+					endpoint.FlareSolverrURL = "http://127.0.0.1:8191"
 				}
 			}
 
@@ -137,10 +137,7 @@ func TestFlareSolverrIntegration(t *testing.T) {
 		params map[string]string
 	}{
 		"eztv": {
-			params: map[string]string{"query": "ubuntu"},
-		},
-		"nyaa": {
-			params: map[string]string{"query": "ubuntu"},
+			params: map[string]string{"query": "house+of+the+dragon"},
 		},
 	}
 

@@ -12,25 +12,25 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-//Endpoint represents a single remote endpoint. The performed
-//query can be modified between each call by parameterising
-//URL. See documentation.
+// Endpoint represents a single remote endpoint. The performed
+// query can be modified between each call by parameterising
+// URL. See documentation.
 type Endpoint struct {
-	Name             string                `json:"name,omitempty"`
-	Method           string                `json:"method,omitempty"`
-	URL              string                `json:"url"`
-	Body             string                `json:"body,omitempty"`
-	Headers          map[string]string     `json:"headers,omitempty"`
-	List             string                `json:"list,omitempty"`
-	Result           map[string]Extractors `json:"result"`
-	Debug            bool
-	Flare            bool                  `json:"flare,omitempty"`
-	JSON             bool                  `json:"json,omitempty"`
-	FlareSolverrURL  string
-	Client           *http.Client
+	Name            string                `json:"name,omitempty"`
+	Method          string                `json:"method,omitempty"`
+	URL             string                `json:"url"`
+	Body            string                `json:"body,omitempty"`
+	Headers         map[string]string     `json:"headers,omitempty"`
+	List            string                `json:"list,omitempty"`
+	Result          map[string]Extractors `json:"result"`
+	Debug           bool
+	Flare           bool `json:"flare,omitempty"`
+	JSON            bool `json:"json,omitempty"`
+	FlareSolverrURL string
+	Client          *http.Client
 }
 
-//extract 1 result using this endpoints extractor map
+// extract 1 result using this endpoints extractor map
 func (e *Endpoint) extract(sel *goquery.Selection) Result {
 	r := Result{}
 	for field, ext := range e.Result {
@@ -94,17 +94,20 @@ func (e *Endpoint) extractJSON(raw interface{}) Result {
 	return r
 }
 
-func (e *Endpoint) doFlareSolverr(reqURL string) (*http.Client, error) {
+func (e *Endpoint) doFlareSolverr(reqURL string) (io.Reader, error) {
 	if e.FlareSolverrURL == "" {
 		return nil, nil
+	}
+	sessionName := ""
+	u, err := url.Parse(reqURL)
+	if err == nil {
+		sessionName = u.Host
 	}
 	payload := map[string]interface{}{
 		"cmd":                 "request.get",
 		"url":                 reqURL,
-		"session":             "st",
+		"session":             sessionName,
 		"session_ttl_minutes": 5,
-		"returnOnlyCookies":   true,
-		"disableMedia":        true,
 	}
 	b, err := json.Marshal(payload)
 	if err != nil {
@@ -126,11 +129,9 @@ func (e *Endpoint) doFlareSolverr(reqURL string) (*http.Client, error) {
 	defer resp.Body.Close()
 	var fsResp struct {
 		Solution struct {
-			Cookies []struct {
-				Name  string `json:"name"`
-				Value string `json:"value"`
-			} `json:"cookies"`
-			UserAgent string `json:"userAgent"`
+			Response string `json:"response"`
+			Status   int    `json:"status"`
+			Error    string `json:"error"`
 		} `json:"solution"`
 		Error string `json:"error"`
 	}
@@ -140,47 +141,13 @@ func (e *Endpoint) doFlareSolverr(reqURL string) (*http.Client, error) {
 	if fsResp.Error != "" {
 		return nil, fmt.Errorf("flaresolverr error: %s", fsResp.Error)
 	}
-	if len(fsResp.Solution.Cookies) == 0 {
-		return nil, nil
+	if fsResp.Solution.Error != "" {
+		return nil, fmt.Errorf("flaresolverr error: %s", fsResp.Solution.Error)
 	}
-	jar := &memoryCookieJar{
-		cookies: make(map[string][]*http.Cookie),
+	if fsResp.Solution.Response != "" {
+		return strings.NewReader(fsResp.Solution.Response), nil
 	}
-	targetURL, err := url.Parse(reqURL)
-	if err != nil {
-		return nil, err
-	}
-	for _, c := range fsResp.Solution.Cookies {
-		jar.cookies[targetURL.String()] = append(jar.cookies[targetURL.String()], &http.Cookie{
-			Name:  c.Name,
-			Value: c.Value,
-		})
-	}
-	clientWithCookies := &http.Client{
-		Jar: jar,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			for _, c := range fsResp.Solution.Cookies {
-				req.AddCookie(&http.Cookie{
-					Name:  c.Name,
-					Value: c.Value,
-				})
-			}
-			return nil
-		},
-	}
-	return clientWithCookies, nil
-}
-
-type memoryCookieJar struct {
-	cookies map[string][]*http.Cookie
-}
-
-func (j *memoryCookieJar) SetCookies(u *url.URL, cookies []*http.Cookie) {
-	j.cookies[u.String()] = append(j.cookies[u.String()], cookies...)
-}
-
-func (j *memoryCookieJar) Cookies(u *url.URL) []*http.Cookie {
-	return j.cookies[u.String()]
+	return nil, nil
 }
 
 // Execute will execute an Endpoint with the given params
@@ -233,30 +200,34 @@ func (e *Endpoint) Execute(params map[string]string) ([]Result, error) {
 	if client == nil {
 		client = http.DefaultClient
 	}
+	var bodyReader io.Reader
 	useFlare := e.Flare && e.FlareSolverrURL != ""
 	if useFlare {
-		fsClient, err := e.doFlareSolverr(url)
+		fsBody, err := e.doFlareSolverr(url)
 		if err != nil {
 			return nil, err
 		}
-		if fsClient != nil {
-			client = fsClient
+		if fsBody != nil {
+			bodyReader = fsBody
 		}
 	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if e.Debug {
-		logf("resp: %d (type: %s, len: %s)", resp.StatusCode,
-			resp.Header.Get("Content-Type"), resp.Header.Get("Content-Length"))
+	if bodyReader == nil {
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+		if e.Debug {
+			logf("resp: %d (type: %s, len: %s)", resp.StatusCode,
+				resp.Header.Get("Content-Type"), resp.Header.Get("Content-Length"))
+		}
+		bodyReader = resp.Body
 	}
 	//results will be either a list of results, or a single result
 	var results []Result
 	if e.JSON {
 		var raw interface{}
-		if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		if err := json.NewDecoder(bodyReader).Decode(&raw); err != nil {
 			return nil, err
 		}
 		switch v := raw.(type) {
@@ -273,7 +244,7 @@ func (e *Endpoint) Execute(params map[string]string) ([]Result, error) {
 		return results, nil
 	}
 	//parse HTML
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	doc, err := goquery.NewDocumentFromReader(bodyReader)
 	if err != nil {
 		return nil, err
 	}

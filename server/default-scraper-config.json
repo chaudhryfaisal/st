@@ -10,31 +10,8 @@
         "a.epinfo",
         "@href"
       ],
-      "size": "td:nth-of-type(4)",
-      "seeds": "td:nth-of-type(6)"
-    }
-  },
-  "nyaa": {
-    "name": "Nyaa",
-    "url": "https://nyaa.si/?f=0&c=0_0&s=seeders&o=desc&q={{query}}&p=1",
-    "flare": true,
-    "list": "table.torrent-list > tbody > tr",
-    "result": {
-      "name": [
-        "td:nth-of-type(2) a:not([class])",
-        ""
-      ],
-      "path": [
-        "td:nth-of-type(2) a:not([class])",
-        "@href"
-      ],
-      "magnet": [
-        "td:nth-of-type(3) a[href^=\"magnet:\"]",
-        "@href"
-      ],
-      "size": "td:nth-of-type(4)",
-      "seeds": "td:nth-of-type(6)",
-      "peers": "td:nth-of-type(7)"
+      "size": "td:nth-last-of-type(3)",
+      "seeds": "td:last-child"
     }
   },
   "thepiratebay": {

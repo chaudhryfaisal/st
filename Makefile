@@ -10,6 +10,7 @@ get:
 	go mod download
 
 run:
+	open http://127.0.0.1:3000
 	go run .
 
 test:
@@ -17,3 +18,5 @@ test:
 
 clean:
 	rm -f $(app_name)
+test_scrapers:
+	FLARESOLVERR_URL=http://127.0.0.1:8191 go test ./server/ -run TestScrapers -v -timeout 120s

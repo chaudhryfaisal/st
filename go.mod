@@ -138,4 +138,4 @@ require (
 	zombiezen.com/go/sqlite v1.4.2 // indirect
 )
 
-// replace github.com/boypt/simple-torrent => .
+replace github.com/jpillora/scraper => ./scraper

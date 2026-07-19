@@ -20,7 +20,7 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/anacrolix/torrent"
-	"github.com/boypt/scraper"
+	"github.com/jpillora/scraper/scraper"
 	"github.com/chaudhryfaisal/st/engine"
 	ctstatic "github.com/chaudhryfaisal/st/static"
 	"github.com/jpillora/cookieauth"

@@ -1,7 +1,8 @@
 version: '3'
 services:
-  service.simpletorrent:
+  simpletorrent:
     image: ghcr.io/chaudhryfaisal/st
+    build: .
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -10,7 +11,18 @@ services:
     environment:
       AUTH: "username:password"
       TITLE: "MySimpleTorrent"
+      FLARESOLVERR_URL: http://flaresolverr:8191
     volumes:
       - ./downloads:/srv/downloads
       - ./cloud-torrent.yaml:/etc/cloud-torrent.yaml
     command: ["-c", "/etc/cloud-torrent.yaml"]
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.0 
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_FILE=${LOG_FILE:-none}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=America/New_York
+    ports: [ "${PORT:-8191}:8191" ]
+    restart: unless-stopped

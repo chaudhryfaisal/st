@@ -52,6 +52,7 @@ type Server struct {
 	UnixPerm       string `opts:"help=DomainSocket file permission (default 0666),env=UNIXPERM"`
 	Auth           string `opts:"help=Optional basic auth in form 'user:password',env=AUTH"`
 	ProxyURL       string `opts:"help=Proxy url,env=PROXY_URL"`
+	FlareSolverrURL string `opts:"help=FlareSolverr URL,env=FLARESOLVERR_URL"`
 	ConfigPath     string `opts:"help=Configuration file path (default ./cloud-torrent.yaml),short=c,env=CONFIGPATH"`
 	KeyPath        string `opts:"help=TLS Key file path"`
 	CertPath       string `opts:"help=TLS Certicate file path,short=r"`
@@ -138,6 +139,7 @@ func (s *Server) Run(tpl *TPLInfo) error {
 	//scraper
 	s.scraper = &scraper.Handler{
 		Log: s.Debug, Debug: s.Debug,
+		FlareSolverrURL: s.FlareSolverrURL,
 		Headers: map[string]string{
 			//we're a trusty browser :)
 			"User-Agent": scraperUA,

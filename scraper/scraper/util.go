@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/url"
 	"regexp"
-	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -29,11 +28,7 @@ func template(isurl bool, str string, vars map[string]string) (out string, err e
 		}
 		//determine if we need to escape
 		if isurl {
-			queryi := strings.Index(str, "?")
-			keyi := strings.Index(str, key)
-			if queryi != -1 && keyi > queryi {
-				value = url.QueryEscape(value)
-			}
+			value = url.PathEscape(value)
 		}
 		return value
 	})

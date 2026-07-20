@@ -113,6 +113,9 @@ func (e *Endpoint) doFlareSolverr(reqURL string) (io.Reader, error) {
 	if err != nil {
 		return nil, err
 	}
+	if e.Debug {
+		logf("flare: POST %s/v1 url=%q session=%q", e.FlareSolverrURL, reqURL, sessionName)
+	}
 	req, err := http.NewRequest("POST", e.FlareSolverrURL+"/v1", bytes.NewReader(b))
 	if err != nil {
 		return nil, err
@@ -124,6 +127,9 @@ func (e *Endpoint) doFlareSolverr(reqURL string) (io.Reader, error) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
+		if e.Debug {
+			logf("flare: request error: %v", err)
+		}
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -136,13 +142,25 @@ func (e *Endpoint) doFlareSolverr(reqURL string) (io.Reader, error) {
 		Error string `json:"error"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&fsResp); err != nil {
+		if e.Debug {
+			logf("flare: decode error: %v", err)
+		}
 		return nil, err
 	}
 	if fsResp.Error != "" {
+		if e.Debug {
+			logf("flare: error: %s", fsResp.Error)
+		}
 		return nil, fmt.Errorf("flaresolverr error: %s", fsResp.Error)
 	}
 	if fsResp.Solution.Error != "" {
+		if e.Debug {
+			logf("flare: solution error: %s", fsResp.Solution.Error)
+		}
 		return nil, fmt.Errorf("flaresolverr error: %s", fsResp.Solution.Error)
+	}
+	if e.Debug {
+		logf("flare: status=%d response_len=%d", fsResp.Solution.Status, len(fsResp.Solution.Response))
 	}
 	if fsResp.Solution.Response != "" {
 		return strings.NewReader(fsResp.Solution.Response), nil
@@ -203,12 +221,18 @@ func (e *Endpoint) Execute(params map[string]string) ([]Result, error) {
 	var bodyReader io.Reader
 	useFlare := e.Flare && e.FlareSolverrURL != ""
 	if useFlare {
+		if e.Debug {
+			logf("flare: using FlareSolverr at %s", e.FlareSolverrURL)
+		}
 		fsBody, err := e.doFlareSolverr(url)
 		if err != nil {
 			return nil, err
 		}
 		if fsBody != nil {
 			bodyReader = fsBody
+			if e.Debug {
+				logf("flare: using FlareSolverr response body")
+			}
 		}
 	}
 	if bodyReader == nil {

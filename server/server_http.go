@@ -32,19 +32,13 @@ func (s *Server) webHandle(w http.ResponseWriter, r *http.Request) {
 			// avoid gzip buffer
 			w.Header().Set("Content-Encoding", "identity")
 		}
-		conn, err := velox.Sync(&s.state, w, r)
-		if err != nil {
-			log.Printf("sync failed: %s", err)
-			return
-		}
-		ukey := conn.ID() + "|" + r.RemoteAddr
-		s.state.Users[ukey] = struct{}{}
+		s.state.Users[r.RemoteAddr] = struct{}{}
 		s.syncConnected <- struct{}{}
 		s.syncWg.Add(1)
 		defer s.syncWg.Done()
+		defer delete(s.state.Users, r.RemoteAddr)
 		s.state.Push()
-		conn.Wait()
-		delete(s.state.Users, ukey)
+		s.syncHandler.ServeHTTP(w, r)
 		return
 	case "/js/velox.js":
 		velox.JS.ServeHTTP(w, r)

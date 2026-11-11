@@ -20,11 +20,11 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/anacrolix/torrent"
-	"github.com/jpillora/scraper/scraper"
 	"github.com/chaudhryfaisal/st/engine"
 	ctstatic "github.com/chaudhryfaisal/st/static"
 	"github.com/jpillora/cookieauth"
 	"github.com/jpillora/requestlog"
+	"github.com/jpillora/scraper/scraper"
 	"github.com/jpillora/velox"
 	"github.com/mmcdole/gofeed"
 	"github.com/skratchdot/open-golang/open"
@@ -42,29 +42,29 @@ var (
 	ErrDiskSpace = errors.New("not enough disk space")
 )
 
-//Server is the "State" portion of the diagram
+// Server is the "State" portion of the diagram
 type Server struct {
 	//config
-	Title          string `opts:"help=Title of this instance,env=TITLE"`
-	Port           int    `opts:"help=Depreciated. use --listen. Listening port(),env=PORT"`
-	Host           string `opts:"help=Depreciated. use --listen. Listening interface,env=HOST"`
-	Listen         string `opts:"help=Listening Address:Port or unix socket (default all),env=LISTEN"`
-	UnixPerm       string `opts:"help=DomainSocket file permission (default 0666),env=UNIXPERM"`
-	Auth           string `opts:"help=Optional basic auth in form 'user:password',env=AUTH"`
-	ProxyURL       string `opts:"help=Proxy url,env=PROXY_URL"`
+	Title           string `opts:"help=Title of this instance,env=TITLE"`
+	Port            int    `opts:"help=Depreciated. use --listen. Listening port(),env=PORT"`
+	Host            string `opts:"help=Depreciated. use --listen. Listening interface,env=HOST"`
+	Listen          string `opts:"help=Listening Address:Port or unix socket (default all),env=LISTEN"`
+	UnixPerm        string `opts:"help=DomainSocket file permission (default 0666),env=UNIXPERM"`
+	Auth            string `opts:"help=Optional basic auth in form 'user:password',env=AUTH"`
+	ProxyURL        string `opts:"help=Proxy url,env=PROXY_URL"`
 	FlareSolverrURL string `opts:"help=FlareSolverr URL,env=FLARESOLVERR_URL"`
-	ConfigPath     string `opts:"help=Configuration file path (default ./cloud-torrent.yaml),short=c,env=CONFIGPATH"`
-	KeyPath        string `opts:"help=TLS Key file path"`
-	CertPath       string `opts:"help=TLS Certicate file path,short=r"`
-	RestAPI        string `opts:"help=Listen on a trusted port accepts /api/ requests (eg. localhost:3001),env=RESTAPI"`
-	ReqLog         bool   `opts:"help=Enable request logging,env=REQLOG"`
-	Open           bool   `opts:"help=Open now with your default browser"`
-	DisableLogTime bool   `opts:"help=Don't print timestamp in log,env=DISABLELOGTIME"`
-	DisableMmap    bool   `opts:"help=Don't use mmap,env=DISABLEMMAP"`
-	Debug          bool   `opts:"help=Debug app,env=DEBUG"`
-	DebugTorrent   bool   `opts:"help=Debug torrent engine,env=DEBUGTORRENT"`
-	ConvYAML       bool   `opts:"help=Convert old json config to yaml format."`
-	IntevalSec     int    `opts:"help=Inteval seconds to push data to clients (default 3),env=INTEVALSEC"`
+	ConfigPath      string `opts:"help=Configuration file path (default ./cloud-torrent.yaml),short=c,env=CONFIGPATH"`
+	KeyPath         string `opts:"help=TLS Key file path"`
+	CertPath        string `opts:"help=TLS Certicate file path,short=r"`
+	RestAPI         string `opts:"help=Listen on a trusted port accepts /api/ requests (eg. localhost:3001),env=RESTAPI"`
+	ReqLog          bool   `opts:"help=Enable request logging,env=REQLOG"`
+	Open            bool   `opts:"help=Open now with your default browser"`
+	DisableLogTime  bool   `opts:"help=Don't print timestamp in log,env=DISABLELOGTIME"`
+	DisableMmap     bool   `opts:"help=Don't use mmap,env=DISABLEMMAP"`
+	Debug           bool   `opts:"help=Debug app,env=DEBUG"`
+	DebugTorrent    bool   `opts:"help=Debug torrent engine,env=DEBUGTORRENT"`
+	ConvYAML        bool   `opts:"help=Convert old json config to yaml format."`
+	IntevalSec      int    `opts:"help=Inteval seconds to push data to clients (default 3),env=INTEVALSEC"`
 
 	//http handlers
 	scraperh, dlfilesh, statich, verStatich, rssh http.Handler
@@ -77,6 +77,7 @@ type Server struct {
 	syncConnected chan struct{}
 	syncWg        sync.WaitGroup
 	syncSemphor   int32
+	syncHandler   http.Handler
 
 	state struct {
 		velox.State
@@ -191,6 +192,8 @@ func (s *Server) Run(tpl *TPLInfo) error {
 		return err
 	}
 	s.state.Torrents = s.engine.GetTorrents()
+	// bind the shared state once; Push() on s.state then reaches every client
+	s.syncHandler = velox.SyncHandler(&s.state)
 
 	if s.Debug {
 		viper.Debug()

@@ -7,9 +7,8 @@ WORKDIR /root/cloud-torrent
 ENV PATH=$HOME/go/bin:$PATH 
 ENV CGO_ENABLED=1
 ARG TAG=dev
-COPY go.mod go.sum ./
-RUN go mod download
 COPY . .
+RUN go mod download
 
 RUN go build -trimpath -ldflags "-s -w -X main.VERSION=${TAG}" -o /usr/local/bin/cloud-torrent
 ############################

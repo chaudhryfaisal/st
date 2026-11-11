@@ -35,7 +35,7 @@ var (
 	ErrMaxConnTasks  = errors.New("Max conncurrent task reached")
 )
 
-//the Engine Cloud Torrent engine, backed by anacrolix/torrent
+// the Engine Cloud Torrent engine, backed by anacrolix/torrent
 type Engine struct {
 	sync.RWMutex // race condition on ts,client
 	taskMutex    sync.Mutex
@@ -307,7 +307,7 @@ func (e *Engine) torrentEventProcessor(tt *torrent.Torrent, t *Torrent, ih strin
 	}
 }
 
-//GetTorrents just get the local infohash->Torrent map
+// GetTorrents just get the local infohash->Torrent map
 func (e *Engine) GetTorrents() *map[string]*Torrent {
 	return &e.ts
 }

@@ -1,0 +1,32 @@
+version: "2"
+linters:
+  settings:
+    errcheck:
+      exclude-functions:
+        - (io.Closer).Close
+        - (*os.File).Close
+        - (*net/http.Server).Close
+        - (net.Listener).Close
+        - os.Remove
+        - (*github.com/fsnotify/fsnotify.Watcher).Close
+    staticcheck:
+      checks:
+        - all
+        - -ST1000
+        - -ST1003
+        - -ST1005 # legacy capitalised error strings
+        - -ST1020
+        - -ST1021
+        - -ST1022
+        - -QF*
+        - -SA1019 # deprecated APIs (torrent MetaInfo.Magnet)
+        - -SA1026 # scraper config marshals func fields
+  exclusions:
+    rules:
+      - linters: [errcheck]
+        text: "Close|Remove"
+      - linters: [errcheck]
+        path: _test\.go
+formatters:
+  enable:
+    - gofmt

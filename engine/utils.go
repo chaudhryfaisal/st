@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/chaudhryfaisal/st/common"
 	"github.com/c2h5oh/datasize"
+	"github.com/chaudhryfaisal/st/common"
 	"golang.org/x/time/rate"
 )
 

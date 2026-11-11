@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -99,7 +99,7 @@ func (s *Server) apiPOST(r *http.Request) error {
 		return fmt.Errorf("ERROR: Invalid request method (expecting POST)")
 	}
 
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		return fmt.Errorf("ERROR: Failed to download request body: %w", err)
 	}
@@ -116,7 +116,7 @@ func (s *Server) apiPOST(r *http.Request) error {
 			//enforce max body size (512k)
 			return fmt.Errorf("ERROR: Remote torrent too large")
 		}
-		data, err = ioutil.ReadAll(remote.Body)
+		data, err = io.ReadAll(remote.Body)
 		if err != nil {
 			return fmt.Errorf("ERROR: Failed to download remote torrent: %w", err)
 		}

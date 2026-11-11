@@ -119,7 +119,7 @@ func (e *Engine) RestoreTask(fn string) error {
 			os.Remove(fn)
 		}
 	} else if strings.HasSuffix(fn, ".info") && isCachedFile {
-		mag, err := ioutil.ReadFile(fn)
+		mag, err := os.ReadFile(fn)
 		if err != nil {
 			log.Printf("Task: fail to read %s\n", fn)
 			return err

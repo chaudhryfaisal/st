@@ -12,7 +12,13 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Run linter
-        uses: golangci/golangci-lint-action@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          version: v1.55.2
+          go-version-file: go.mod
+
+      - name: Run linter
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+          args: --timeout=10m

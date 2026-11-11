@@ -6,10 +6,12 @@ RUN apk update && apk add --no-cache git make build-base
 WORKDIR /root/cloud-torrent
 ENV PATH=$HOME/go/bin:$PATH 
 ENV CGO_ENABLED=1
-RUN git clone https://github.com/chaudhryfaisal/st.git . && \
-    go get -v -t -d .
+ARG TAG=dev
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
 
-RUN go build -trimpath -ldflags "-s -w -X main.VERSION=$(git describe --tags)" -o /usr/local/bin/cloud-torrent
+RUN go build -trimpath -ldflags "-s -w -X main.VERSION=${TAG}" -o /usr/local/bin/cloud-torrent
 ############################
 # STEP 2 build a small image
 ############################

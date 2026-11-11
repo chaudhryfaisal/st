@@ -1,12 +1,15 @@
 name: release build
 on:
-  create:
+  push:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
-    if: ${{ github.owner }} == "chaudhryfaisal"
+    if: github.repository_owner == 'chaudhryfaisal'
     name: Build
     runs-on: ubuntu-latest
     steps:
@@ -14,13 +17,12 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
       with:
-        ref: 'master'
         fetch-depth: '0'
 
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: "^1.17"
+        go-version-file: go.mod
 
     - name: Get dependencies
       run: |
@@ -38,12 +40,11 @@ jobs:
       run: |
         go version
         git fetch origin +refs/tags/*:refs/tags/*
-        echo "Current Tag: ${GITHUB_REF}"
-        git checkout ${GITHUB_REF} -b compile
+        echo "Current Tag: ${GITHUB_REF_NAME}"
         GITVER=$(git describe --tags)
-        PREVVER=$(git describe --tags --abbrev=0 ${GITVER}~1)
-        echo git log --oneline ${PREVVER}..${GITVER} | tee -a gittaglogs.txt
-        git log --oneline ${PREVVER}..${GITVER} | tee -a gittaglogs.txt
+        PREVVER=$(git describe --tags --abbrev=0 ${GITVER}~1 2>/dev/null || true)
+        if [ -n "${PREVVER}" ]; then RANGE="${PREVVER}..${GITVER}"; else RANGE="${GITVER}"; fi
+        git log --oneline ${RANGE} | tee -a gittaglogs.txt
 
     - name: Release
       uses: softprops/action-gh-release@v2

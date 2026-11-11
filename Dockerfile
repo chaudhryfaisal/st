@@ -1,20 +1,31 @@
+# syntax=docker/dockerfile:1
 ############################
-# STEP 1 build executable binary
+# STEP 1 build executable binary (runs natively on the builder's arch and
+# cross-compiles, so multi-arch builds don't need QEMU emulation)
 ############################
-FROM golang:alpine AS builder
-RUN apk update && apk add --no-cache git make build-base
-WORKDIR /root/cloud-torrent
-ENV PATH=$HOME/go/bin:$PATH 
-ENV CGO_ENABLED=1
+FROM --platform=$BUILDPLATFORM golang:alpine AS builder
+ARG TARGETOS
+ARG TARGETARCH
 ARG TAG=dev
-COPY . .
-RUN go mod download
+ENV CGO_ENABLED=0
+RUN apk add --no-cache ca-certificates
+WORKDIR /src
 
-RUN go build -trimpath -ldflags "-s -w -X main.VERSION=${TAG}" -o /usr/local/bin/cloud-torrent
+# the go.mod has a local `replace` for ./scraper, so it must be present
+# before `go mod download`
+COPY go.mod go.sum ./
+COPY scraper/go.mod ./scraper/
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+
+COPY . .
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    GOOS=$TARGETOS GOARCH=$TARGETARCH \
+    go build -trimpath -ldflags "-s -w -X main.VERSION=${TAG}" -o /usr/local/bin/cloud-torrent
 ############################
 # STEP 2 build a small image
 ############################
 FROM alpine
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /usr/local/bin/cloud-torrent /usr/local/bin/cloud-torrent
-RUN apk update && apk add ca-certificates libstdc++
 ENTRYPOINT ["cloud-torrent"]

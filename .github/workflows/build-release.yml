@@ -7,57 +7,79 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     if: github.repository_owner == 'chaudhryfaisal'
-    name: Build
+    name: Build ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { name: linux_amd64,         args: "gzip amd64" }
+          - { name: linux_amd64_static,  args: "gzip amd64 static" }
+          - { name: linux_386_static,    args: "gzip 386 purego" }
+          - { name: linux_arm64_static,  args: "gzip arm64 purego" }
+          - { name: darwin_amd64_static, args: "gzip darwin purego" }
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build
+        run: bash scripts/make_release.sh ${{ matrix.args }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin_${{ matrix.name }}
+          path: cloud-torrent_${{ matrix.name }}.gz
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    name: Release
+    needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Check out code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: '0'
+      - name: Generate Git Log
+        run: |
+          git fetch origin +refs/tags/*:refs/tags/*
+          echo "Current Tag: ${GITHUB_REF_NAME}"
+          GITVER=$(git describe --tags)
+          PREVVER=$(git describe --tags --abbrev=0 ${GITVER}~1 2>/dev/null || true)
+          if [ -n "${PREVVER}" ]; then RANGE="${PREVVER}..${GITVER}"; else RANGE="${GITVER}"; fi
+          git log --oneline ${RANGE} | tee -a gittaglogs.txt
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version-file: go.mod
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: bin_*
+          path: dist
+          merge-multiple: true
 
-    - name: Get dependencies
-      run: |
-        go mod download -x
-
-    - name: Build
-      run: |
-        bash scripts/make_release.sh gzip amd64
-        bash scripts/make_release.sh gzip amd64 static
-        bash scripts/make_release.sh gzip 386 purego
-        bash scripts/make_release.sh gzip arm64 purego
-        bash scripts/make_release.sh gzip darwin purego
-
-    - name: Generate Git Log
-      run: |
-        go version
-        git fetch origin +refs/tags/*:refs/tags/*
-        echo "Current Tag: ${GITHUB_REF_NAME}"
-        GITVER=$(git describe --tags)
-        PREVVER=$(git describe --tags --abbrev=0 ${GITVER}~1 2>/dev/null || true)
-        if [ -n "${PREVVER}" ]; then RANGE="${PREVVER}..${GITVER}"; else RANGE="${GITVER}"; fi
-        git log --oneline ${RANGE} | tee -a gittaglogs.txt
-
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: |
-          cloud-torrent_linux_amd64.gz
-          cloud-torrent_linux_amd64_static.gz
-          cloud-torrent_linux_386_static.gz
-          cloud-torrent_linux_arm64_static.gz
-          cloud-torrent_darwin_amd64_static.gz
-        prerelease: false
-        draft: true
-        body_path: gittaglogs.txt
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.gz
+          prerelease: false
+          draft: true
+          body_path: gittaglogs.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -27,6 +27,22 @@ export interface Config {
 }
 
 //////////
+// source: donecmd.go
+
+/**
+ * DoneEvent describes a finished file or torrent. It is delivered to the
+ * handler installed with SetDoneHandler, on its own goroutine.
+ */
+export interface DoneEvent {
+  Type: string; // "file" or "torrent"
+  InfoHash: string;
+  Path: string; // file path within the torrent, or the torrent name
+  Size: number /* int64 */;
+  StartedAt: string;
+  FileCount: number /* int */;
+}
+
+//////////
 // source: inbox.go
 
 

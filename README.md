@@ -26,15 +26,19 @@ This is a ground-up rewrite of the original
 
 **Binaries**
 
-[![Releases](https://img.shields.io/github/v/release/jpillora/cloud-torrent?include_prereleases)](https://github.com/jpillora/cloud-torrent/releases)
+[![Releases](https://img.shields.io/github/v/release/jpillora/cloud-torrent?include_prereleases)](https://github.com/chaudhryfaisal/st/releases)
 
-Download binaries from [GitHub Releases](https://github.com/jpillora/cloud-torrent/releases). New releases are published as prereleases for Linux, macOS, and Windows.
+Download binaries from [GitHub Releases](https://github.com/chaudhryfaisal/st/releases). New releases are published as prereleases for Linux, macOS, and Windows.
 
 **Docker**
 
-Docker image publishing is disabled. To build and run the current source locally:
+Tagged releases (`v*`) publish a multi-arch image to `ghcr.io/chaudhryfaisal/st` (see `.github/workflows/docker.yml`).
+To run it, or to build and run the current source locally:
 
 ```sh
+docker run -d -p 3000:3000 -v /path/to/downloads:/downloads ghcr.io/chaudhryfaisal/st:latest
+
+# or build from source
 docker build -f .dev/Dockerfile -t cloud-torrent .
 docker run -d -p 3000:3000 -v /path/to/downloads:/downloads cloud-torrent
 ```

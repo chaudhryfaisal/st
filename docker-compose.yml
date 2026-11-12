@@ -1,0 +1,12 @@
+services:
+  simpletorrent:
+    image: ghcr.io/chaudhryfaisal/st:latest
+    build:
+      context: .
+      dockerfile: .dev/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      # downloads and cloud-torrent.json (settings) live in the volume
+      - ./downloads:/downloads

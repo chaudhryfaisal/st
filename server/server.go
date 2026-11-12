@@ -39,6 +39,7 @@ type Server struct {
 	ConfigPath         string `help:"Configuration file path"`
 	KeyPath            string `help:"TLS Key file path"`
 	CertPath           string `help:"TLS Certificate file path" short:"r"`
+	CtxPath            string `opts:"name=ctx-path,short=-" help:"Serve everything under this URL path prefix (context path), eg. /st" env:"CTXPATH"`
 	DoneCmd            string `opts:"name=done-cmd,short=-" help:"Program run when a file or torrent finishes (startup-only; gets CLD_* env)" env:"DONECMD"`
 	RestAPI            string `opts:"name=rest-api,short=-" help:"Trusted /api/ listener without auth for the done command (eg. 127.0.0.1:3001; default: ephemeral loopback port)" env:"RESTAPI"`
 	Log                bool   `help:"Enable request logging"`
@@ -260,7 +261,7 @@ func (s *Server) handler() http.Handler {
 	if s.Log {
 		h = requestlog.Wrap(h)
 	}
-	return s.protectIngress(h)
+	return s.withContextPath(s.protectIngress(h))
 }
 
 func compressResponses(h http.Handler) http.Handler {

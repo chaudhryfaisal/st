@@ -2,6 +2,12 @@ import { computed, reactive } from 'vue'
 import type { State } from './types/generated'
 import { connect, type Conn, type ConnPhase } from './velox'
 
+// syncPath is the absolute path of the realtime endpoint beneath wherever the
+// app is served (the velox client does not resolve relative URLs itself).
+function syncPath(): string {
+  return new URL('sync', document.baseURI).pathname
+}
+
 // state is the root application state, synced from the Go backend via velox.
 // It starts empty and is filled in place as updates arrive.
 export const state = reactive<Partial<State>>({})
@@ -42,7 +48,7 @@ let conn: Conn | null = null
 // startSync opens the realtime connection and keeps `state` live.
 export function startSync(): void {
   if (conn) return
-  conn = connect('/sync', state, (s) => {
+  conn = connect(syncPath(), state, (s) => {
     connection.connected = s.connected
     connection.phase = s.phase
     connection.attempt = s.attempt

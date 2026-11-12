@@ -54,9 +54,9 @@ function loadClient(): Promise<VeloxFactory> {
   if (loading) return loading
   loading = new Promise<VeloxFactory>((resolve, reject) => {
     const el = document.createElement('script')
-    el.src = '/js/velox.js'
+    el.src = 'js/velox.js'
     el.async = false
-    const timeout = setTimeout(() => fail('timed out loading /js/velox.js'), ATTEMPT_TIMEOUT)
+    const timeout = setTimeout(() => fail('timed out loading js/velox.js'), ATTEMPT_TIMEOUT)
     function fail(message: string) {
       clearTimeout(timeout)
       el.onload = el.onerror = null
@@ -68,7 +68,7 @@ function loadClient(): Promise<VeloxFactory> {
       if (window.velox) resolve(window.velox)
       else fail('velox client did not register')
     }
-    el.onerror = () => fail('failed to load /js/velox.js')
+    el.onerror = () => fail('failed to load js/velox.js')
     document.head.appendChild(el)
   }).catch((err) => {
     loading = null

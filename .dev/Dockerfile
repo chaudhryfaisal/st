@@ -33,13 +33,13 @@ RUN --mount=type=cache,target=/go/pkg/mod \
       -ldflags "-s -w -X main.version=${VERSION:-$(git describe --tags --always 2>/dev/null || echo docker)}" \
       -o /tmp/cloud-torrent
 
-# ---- run: minimal scratch image ----
-FROM scratch
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=build /tmp/cloud-torrent /cloud-torrent
+# ---- run: alpine, so --done-cmd scripts can use bash and curl ----
+FROM alpine
+RUN apk add --no-cache bash curl ca-certificates tzdata
+COPY --from=build /tmp/cloud-torrent /usr/local/bin/cloud-torrent
 # CWD is "/" so the default ./downloads resolves to /downloads (the volume);
 # the config lives in the volume too, so settings persist across restarts.
 EXPOSE 3000
 VOLUME ["/downloads"]
-ENTRYPOINT ["/cloud-torrent"]
+ENTRYPOINT ["cloud-torrent"]
 CMD ["--port", "3000", "--config-path", "/downloads/cloud-torrent.json"]

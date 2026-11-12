@@ -8,6 +8,8 @@ import vue from '@vitejs/plugin-vue'
 const backend = 'http://localhost:3000'
 
 export default defineConfig({
+  // Relative asset URLs: the same build is served at / or under any --ctx-path.
+  base: './',
   plugins: [vue()],
   server: {
     port: 5173,

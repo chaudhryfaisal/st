@@ -15,7 +15,7 @@ async function post(action: string, body?: unknown, signal?: AbortSignal): Promi
   }
   ui.requests++
   try {
-    const res = await fetch(`/api/${action}`, init)
+    const res = await fetch(`api/${action}`, init)
     if (!res.ok) {
       throw new Error((await res.text()) || res.statusText)
     }
@@ -83,8 +83,8 @@ function extractError(text: string): string {
 export const search = {
   // all runs a provider's list query for a page of results.
   all: (provider: string, query: string, page: number) =>
-    get<SearchResult[]>(`/search/${encodeURIComponent(provider)}`, { query, page: String(page) }),
+    get<SearchResult[]>(`search/${encodeURIComponent(provider)}`, { query, page: String(page) }),
   // one resolves a single result's detail page (magnet/infohash/etc.).
   one: (provider: string, item: string, signal?: AbortSignal) =>
-    get<SearchResult>(`/search/${encodeURIComponent(provider)}/item`, { item }, signal),
+    get<SearchResult>(`search/${encodeURIComponent(provider)}/item`, { item }, signal),
 }

@@ -33,6 +33,7 @@ Download binaries from [GitHub Releases](https://github.com/chaudhryfaisal/st/re
 **Docker**
 
 Tagged releases (`v*`) publish a multi-arch image to `ghcr.io/chaudhryfaisal/st` (see `.github/workflows/docker.yml`).
+The runtime image is alpine with `bash`, `curl` and CA certificates so `--done-cmd` scripts can run.
 To run it, or to build and run the current source locally:
 
 ```sh
@@ -42,6 +43,12 @@ docker run -d -p 3000:3000 -v /path/to/downloads:/downloads ghcr.io/chaudhryfais
 docker build -f .dev/Dockerfile -t cloud-torrent .
 docker run -d -p 3000:3000 -v /path/to/downloads:/downloads cloud-torrent
 ```
+
+**Context path**
+
+`--ctx-path /st` (env `CTXPATH`) serves the whole app under a URL prefix, so a reverse proxy can forward `/st*`
+as-is instead of stripping the prefix. `/st` redirects to `/st/`. The web UI uses relative URLs, so the same build
+also works at `/`.
 
 **Done command**
 

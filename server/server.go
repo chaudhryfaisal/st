@@ -39,6 +39,8 @@ type Server struct {
 	ConfigPath         string `help:"Configuration file path"`
 	KeyPath            string `help:"TLS Key file path"`
 	CertPath           string `help:"TLS Certificate file path" short:"r"`
+	DoneCmd            string `opts:"name=done-cmd,short=-" help:"Program run when a file or torrent finishes (startup-only; gets CLD_* env)" env:"DONECMD"`
+	RestAPI            string `opts:"name=rest-api,short=-" help:"Trusted /api/ listener without auth for the done command (eg. 127.0.0.1:3001; default: ephemeral loopback port)" env:"RESTAPI"`
 	Log                bool   `help:"Enable request logging"`
 	Open               bool   `help:"Open browser after the server starts"`
 
@@ -53,6 +55,7 @@ type Server struct {
 	ingress       ingressLimits // optional isolated-test deadlines
 	searchMu      sync.RWMutex  // protects replacement of immutable scraper configurations
 	fetchClient   *http.Client  // optional client override; configured before serving
+	restAPIAddr   string        // address of the trusted done-command API listener
 }
 
 // Run wires the torrent engine and realtime state, starts the poll/stats loops,
@@ -115,6 +118,11 @@ func (s *Server) Run(version string) error {
 		return err
 	}
 	defer s.engine.Close()
+	stopRestAPI, err := s.startDoneCmd()
+	if err != nil {
+		return err
+	}
+	defer stopRestAPI()
 	if err := s.reconfigure(c); err != nil {
 		return fmt.Errorf("initial configure failed: %w", err)
 	}

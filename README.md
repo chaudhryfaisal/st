@@ -43,6 +43,15 @@ docker build -f .dev/Dockerfile -t cloud-torrent .
 docker run -d -p 3000:3000 -v /path/to/downloads:/downloads cloud-torrent
 ```
 
+**Done command**
+
+`--done-cmd /path/to/script` (env `DONECMD`) runs a program when a file or a whole torrent finishes, once per item
+that was seen downloading. It is a startup-only setting, so the web UI cannot change it. The script gets
+`CLD_DIR`, `CLD_PATH`, `CLD_HASH`, `CLD_TYPE` (`file` or `torrent`), `CLD_SIZE`, `CLD_STARTTS`, `CLD_FILENUM` and
+`CLD_RESTAPI`. `CLD_RESTAPI` is a trusted, unauthenticated `/api/` listener (`--rest-api`, default an ephemeral
+loopback port) so the script can control torrents, e.g. `curl --data "delete:$CLD_HASH" http://$CLD_RESTAPI/api/torrent`
+(the plain `<action>:<infohash>` body of simple-torrent is accepted alongside JSON).
+
 **Source**
 
 *[Go](https://go.dev/dl/) 1.27.3+, [Node](https://nodejs.org) 24+, and [Bun](https://bun.sh) 1.4.4+ are required.*

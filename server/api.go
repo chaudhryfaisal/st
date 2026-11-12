@@ -95,14 +95,14 @@ func (s *Server) api(r *http.Request) error {
 	case "torrentfile":
 		return s.addTorrentFromBytes(body)
 	case "magnet":
-		var req MagnetRequest
-		if err := json.Unmarshal(body, &req); err != nil {
+		req, err := parseMagnetRequest(body)
+		if err != nil {
 			return err
 		}
 		return s.engine.NewMagnet(req.URI)
 	case "torrent":
-		var req TorrentRequest
-		if err := json.Unmarshal(body, &req); err != nil {
+		req, err := parseTorrentRequest(body)
+		if err != nil {
 			return err
 		}
 		switch req.Action {

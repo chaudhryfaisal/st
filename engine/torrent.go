@@ -46,6 +46,9 @@ type Torrent struct {
 	spec           *torrent.TorrentSpec
 	t              *torrent.Torrent
 	transferSample transferSample
+	startedAt      time.Time // first admission in this process, reported to the done handler
+	seenIncomplete bool      // observed incomplete while admitted, so completion is a real transition
+	doneNotified   bool
 }
 
 // File is the engine's view-model for one file within a torrent.
@@ -58,7 +61,9 @@ type File struct {
 	Selected  bool // durable selection intent, including while paused or queued
 	Percent   float32
 
-	f *torrent.File
+	seenIncomplete bool
+	doneNotified   bool
+	f              *torrent.File
 }
 
 // Update refreshes the view-model from the underlying torrent.

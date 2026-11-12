@@ -43,6 +43,7 @@ type Engine struct {
 	accountDirty    bool
 	mutationDepth   int
 	inboxReceipts   map[string]bool
+	onDone          func(DoneEvent)
 }
 
 // New returns an unconfigured engine. Call Configure before adding torrents.

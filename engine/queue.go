@@ -157,6 +157,7 @@ func (e *Engine) scheduleLocked() error {
 		}
 		model.Started = admit
 		if admit {
+			e.trackDoneLocked(model, complete)
 			model.t.AllowDataDownload()
 			if e.config.EnableUpload {
 				model.t.AllowDataUpload()

@@ -107,6 +107,8 @@ run `./dev.ts --help` to list commands. Build and release configuration lives in
 npm --prefix frontend run dev     # Vite dev server (proxies /sync /api -> :3000)
 ./dev.ts test                     # backend tests
 ./dev.ts ci                       # types, build, Go tests, and browser E2E
+./dev.ts sync-upstream --check    # what is new in jpillora/cloud-torrent (changes nothing)
+./dev.ts sync-upstream            # merge it into main (--rebase, --verify, --push available)
 ```
 
 ### Browser end-to-end checks

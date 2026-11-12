@@ -8,6 +8,7 @@ import test from "./.dev/test.ts";
 import ci from "./.dev/ci.ts";
 import release from "./.dev/release.ts";
 import e2e from "./.dev/e2e.ts";
+import syncUpstream from "./.dev/sync-upstream.ts";
 
 process.chdir(import.meta.dir);
-await Register(genTypes, checkTypes, frontend, build, test, ci, release, e2e);
+await Register(genTypes, checkTypes, frontend, build, test, ci, release, e2e, syncUpstream);
